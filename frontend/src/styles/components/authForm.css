@@ -73,3 +73,18 @@
   line-height: 0.85; /* Alinhamento milimétrico */
   margin: 0;
 }
+/* Borda vermelha e efeito de foco quando houver erro */
+.auth-input-custom.input-error {
+  border: 1px solid #d32f2f !important;
+  background-color: #fff8f8; /* Um fundo levemente avermelhado ajuda na distinção */
+}
+
+.auth-input-custom.input-error::placeholder {
+  color: #d32f2f;
+}
+
+.auth-input-custom.input-error:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(211, 47, 47, 0.2);
+  border-color: #d32f2f !important;
+}
