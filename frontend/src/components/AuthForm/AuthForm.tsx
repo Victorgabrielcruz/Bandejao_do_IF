@@ -2,7 +2,9 @@ import { useState, useEffect } from "react";
 import { Alert, AlertTitle, Collapse } from "@mui/material";
 import logo from "../../assets/images/logo.png";
 import "../../styles/components/authForm.css";
-
+import { authService } from "../../services/authService";
+import { userService } from "../../services/userService";
+import { type EType } from "../../types/usuario";
 /**
  * Interface para gerenciar as mensagens de feedback (Sucesso/Erro)
  */
@@ -43,70 +45,43 @@ const AuthForm = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    e.preventDefault();
-    setSubmitted(true); // Isso vai aplicar as bordas vermelhas via CSS
+    setSubmitted(true);
+    setFeedback(null);
+    const { matricula, password, name, email, confirmPassword, userType } = formData;
 
-    // Validação manual simples para exibir o Alerta de erro
-    const { matricula, password, name, email, confirmPassword } = formData;
-    const isFormInvalid = isLogin 
-      ? !matricula || !password 
-      : !matricula || !password || !name || !email || !confirmPassword;
+    const isFormInvalid = isLogin
+      ? !matricula || !password
+      : !matricula || !password || !name || !email || !confirmPassword || password !== confirmPassword;
 
     if (isFormInvalid) {
-      setFeedback({ type: "error", msg: "Por favor, preencha todos os campos obrigatórios." });
-      return; // Interrompe a execução aqui
-    }
-    setLoading(true);
-    setSubmitted(true); // Ativa o estilo de "erro" nos campos vazios
-    setFeedback(null);
-
-    // Validação de Senha (apenas no Cadastro)
-    if (!isLogin && formData.password !== formData.confirmPassword) {
-      setFeedback({ type: "error", msg: "As senhas não coincidem!" });
-      setLoading(false);
+      setFeedback({ type: "error", msg: "Por favor, preencha todos os campos corretamente." });
       return;
     }
-
-    const endpoint = isLogin ? "/api/auth/login" : "/api/auth/register";
-    const payload = isLogin
-      ? { matricula: formData.matricula, password: formData.password }
-      : { ...formData };
-
+    
+    setLoading(true);
+    setFeedback(null);
+    
     try {
-      const response = await fetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      
-      const data = await response.json();
-
-      if (response.ok) {
-        setFeedback({ 
-          type: "success", 
-          msg: isLogin ? "Login bem-sucedido! Redirecionando..." : "Conta criada com sucesso!" 
-        });
-
-        if (isLogin) {
-          // Pequeno delay para o usuário ver o feedback de sucesso antes de sair
-          setTimeout(() => window.location.href = "/", 1500);
-        } else {
-          // Se for registro, aguarda e muda para a tela de login
-          setTimeout(() => {
-            setIsLogin(true);
-            setSubmitted(false);
-            setFeedback(null);
-          }, 2500);
-        }
-      } else {
-        setFeedback({ type: "error", msg: data.message || "Dados inválidos ou erro no servidor." });
+      if (isLogin) {
+        await authService.login({matricula, password});
+        setFeedback({ type: "success", msg: "Login realizado com sucesso!" });
+      }else{
+        const type = userType.split("-")[1] as EType; // Extrai o tipo do vínculo
+        await userService.create({name, email, password, matricula, type});
+        setFeedback({ type: "success", msg: "Conta criada com sucesso! Faça login para continuar." });
+        setTimeout(() => {
+        setIsLogin(true);
+        setSubmitted(false);
+      }, 2500);
       }
-    } catch (error) {
-      setFeedback({ type: "error", msg: "Erro de conexão. Tente novamente mais tarde." });
+  } catch (error: any) {
+      const errorMsg = error.response?.data?.message || "Ocorreu um erro. Tente novamente.";
+      setFeedback({ type: "error", msg: errorMsg });
     } finally {
       setLoading(false);
     }
-  };
+  }
+
 
   /**
    * Função para definir a classe CSS do input dinamicamente.

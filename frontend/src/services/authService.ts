@@ -1,0 +1,12 @@
+import api from './api';
+import type { LoginRequest, LoginResponse } from '../types/auth';
+
+export const authService = {
+    login : async (credentials: LoginRequest): Promise<LoginResponse> => {
+        const response = await api.post<LoginResponse>('/auth/login',credentials);
+        if(response.data.token){
+            localStorage.setItem('@Bandejao:token',response.data.token);
+        }
+        return response.data;
+    }
+}
