@@ -25,4 +25,8 @@ public class AuthService{
             throw new RuntimeException("Matrícula ou senha inválidas");
         }
     }
+
+    public String getMatriculaFromToken(String token) {
+        return jwtUtil.extractUsername(token);
+    }
 }
