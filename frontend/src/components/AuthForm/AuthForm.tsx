@@ -5,6 +5,8 @@ import "../../styles/components/authForm.css";
 import { authService } from "../../services/authService";
 import { userService } from "../../services/userService";
 import { type EType } from "../../types/usuario";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
+import { IconButton} from "@mui/material";
 /**
  * Interface para gerenciar as mensagens de feedback (Sucesso/Erro)
  */
@@ -15,10 +17,12 @@ interface FeedbackState {
 
 const AuthForm = () => {
   // --- ESTADOS ---
+  const [showPassword, setShowPassword] = useState(false);
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false); // Controla se o usuário tentou enviar (para erros visuais)
   const [feedback, setFeedback] = useState<FeedbackState | null>(null);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [formData, setFormData] = useState({
     matricula: "",
@@ -66,8 +70,9 @@ const AuthForm = () => {
         await authService.login({matricula, password});
         setFeedback({ type: "success", msg: "Login realizado com sucesso!" });
       }else{
-        const type = userType.split("-")[1] as EType; // Extrai o tipo do vínculo
-        await userService.create({name, email, password, matricula, type});
+        const type = userType.toUpperCase() as EType; // Extrai o tipo do vínculo
+        console.log({type})
+        await userService.create({name, email, password, matricula, tipo: type});
         setFeedback({ type: "success", msg: "Conta criada com sucesso! Faça login para continuar." });
         setTimeout(() => {
         setIsLogin(true);
@@ -75,7 +80,14 @@ const AuthForm = () => {
       }, 2500);
       }
   } catch (error: any) {
-      const errorMsg = error.response?.data?.message || "Ocorreu um erro. Tente novamente.";
+      const status = error.response?.status;
+      const backendMessage = error.response?.data?.message;
+      let errorMsg = "Ocorreu um erro. Tente novamente.";
+      if (status === 409) {
+        errorMsg = backendMessage || "Já existe um cadastro com esses dados.";
+      } else if (backendMessage) {
+        errorMsg = backendMessage;
+      }
       setFeedback({ type: "error", msg: errorMsg });
     } finally {
       setLoading(false);
@@ -128,15 +140,27 @@ const AuthForm = () => {
           required
         />
         
-        <input
-          name="password"
-          type="password"
-          placeholder="*Senha"
-          value={formData.password}
-          onChange={handleChange}
-          className={getInputClass(formData.password)}
-          required
-        />
+        <div className="relative flex items-center">
+          <input
+            name="password"
+            type={showPassword ? "text" : "password"} // Alterna o tipo
+            placeholder="*Senha"
+            value={formData.password}
+            onChange={handleChange}
+            className={`${getInputClass(formData.password)} pr-10`} // pr-10 para o ícone não cobrir o texto
+            required
+          />
+          <div className="absolute right-2 text-gray-400">
+            <IconButton
+              onClick={() => setShowPassword(!showPassword)}
+              edge="end"
+              size="small"
+              sx={{ color: 'inherit' }}
+            >
+              {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+            </IconButton>
+          </div>
+        </div>
 
         {/* CAMPOS DE REGISTRO */}
         <div className={`register-fields-container ${!isLogin ? 'show' : ''}`}>
@@ -159,15 +183,27 @@ const AuthForm = () => {
               className={getInputClass(formData.email)}
               required={!isLogin}
             />
-            <input
-              name="confirmPassword"
-              type="password"
-              placeholder="*Confirmar Senha"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              className={getInputClass(formData.confirmPassword)}
-              required={!isLogin}
-            />
+            <div className="relative flex items-center">
+              <input
+                name="confirmPassword"
+                type={showConfirmPassword ? "text" : "password"}
+                placeholder="*Confirmar Senha"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                className={`${getInputClass(formData.confirmPassword)} pr-10`}
+                required={!isLogin}
+              />
+              <div className="absolute right-2 text-gray-400">
+                <IconButton
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  edge="end"
+                  size="small"
+                  sx={{ color: 'inherit' }}
+                >
+                  {showConfirmPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                </IconButton>
+              </div>
+            </div>
             
             {/* SELETOR DE TIPO (RADIO) */}
             <div className="flex flex-col gap-2 mt-2">
@@ -178,9 +214,9 @@ const AuthForm = () => {
                     <input
                       type="radio"
                       name="userType"
-                      value={`Aluno-${type}`}
+                      value={`${type}`}
                       className="hidden peer"
-                      checked={formData.userType === `Aluno-${type}`}
+                      checked={formData.userType === `${type}`}
                       onChange={handleChange}
                     />
                     <div className="text-center p-2 rounded-lg border-2 border-gray-100 text-xs font-semibold text-gray-500 cursor-pointer transition-all peer-checked:border-green-600 peer-checked:bg-green-50 peer-checked:text-green-700">
@@ -192,13 +228,6 @@ const AuthForm = () => {
             </div>
           </div>
         </div>
-
-        {isLogin && (
-          <div className="flex items-center gap-2 text-xs text-gray-500 ml-1 py-1">
-            <input type="checkbox" id="remember" className="cursor-pointer" />
-            <label htmlFor="remember" className="cursor-pointer">Lembrar de mim</label>
-          </div>
-        )}
 
         <button type="submit" className="btn-auth-animated mt-2" disabled={loading}>
           {loading ? "Carregando..." : (isLogin ? "Entrar" : "Criar Conta")}
