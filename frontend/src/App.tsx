@@ -1,14 +1,10 @@
 import { useState } from 'react'
 
 import './App.css'
-import AuthPage from './pages/Auth/AuthPage'
+import AppRoutes from './routes/AppRoutes'
 function App() {
 
-  return (
-    <>
-      <AuthPage />
-    </>
-  )
+  return <AppRoutes />
 }
 
 export default App

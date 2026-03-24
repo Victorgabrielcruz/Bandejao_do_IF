@@ -110,7 +110,9 @@ const AuthForm = () => {
         await authService.login({ matricula, password });
 
         setFeedback({ type: "success", msg: "Login realizado com sucesso!" });
-
+        setTimeout(() => {
+          window.location.href = "/admin"; // Redireciona para dashboard após login
+        }, 1500);
       } else {
         // ================= CADASTRO =================
 

@@ -30,5 +30,9 @@ public class UsuarioService{
         Usuario salvo = repository.save(usuario);
         return salvo.toResponse();
     }
-    
+    public UsuarioDTO.Response getUser(String matricula) {
+        Usuario usuario = repository.findByMatricula(matricula)
+            .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+        return usuario.toResponse();
+    }
 }
