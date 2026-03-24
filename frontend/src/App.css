@@ -1,9 +1,10 @@
 @import 'tailwindcss';
 
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
+  width: 100vw;       /* Largura total da janela */
+  height: 100vh;      /* Altura total da janela */
+  margin: 0;          /* Remove as margens que centralizam */
+  padding: 0;         /* Remove o respiro lateral */
   text-align: center;
 }
 

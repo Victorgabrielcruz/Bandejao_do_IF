@@ -25,8 +25,7 @@ a:hover {
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
+
   min-width: 320px;
   min-height: 100vh;
   background-color: #f9fafb;
@@ -67,4 +66,14 @@ button:focus-visible {
   button {
     background-color: #f9f9f9;
   }
+}
+
+@theme {
+  /* Cores exatas do IF (verde) e Mercado Pago (azul) */
+  --color-if-green: #38a169;
+  --color-mp-blue: #009ee3;
+  
+  /* Cores neutras do painel */
+  --color-bg-panel: #f4f6f8;
+  --color-card-border: #e2e8f0;
 }
