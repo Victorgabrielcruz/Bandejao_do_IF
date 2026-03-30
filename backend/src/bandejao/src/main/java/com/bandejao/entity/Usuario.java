@@ -1,4 +1,5 @@
 package com.bandejao.entity;
+
 import com.bandejao.dto.UsuarioDTO;
 import com.bandejao.enums.EStatus;
 import com.bandejao.enums.EType;
@@ -71,5 +72,14 @@ public class Usuario {
 
     public String getMatricula() {
         return matricula;
+    }
+
+    public void setEmail(
+        String email) {
+        this.email = email;
+    }
+
+    public void setPassword(String encode) {
+        this.password = encode;
     }
 }
